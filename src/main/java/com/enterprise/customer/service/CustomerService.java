@@ -5,12 +5,17 @@ import com.enterprise.customer.dto.CustomerResponse;
 import com.enterprise.customer.entity.Customer;
 import com.enterprise.customer.exception.CustomerNotFoundException;
 import com.enterprise.customer.repository.CustomerRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class CustomerService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(CustomerService.class);
 
     private final CustomerRepository customerRepository;
 
@@ -20,6 +25,8 @@ public class CustomerService {
 
     public CustomerResponse createCustomer(CustomerRequest request) {
 
+        log.info("Creating customer with email: {}", request.getEmail());
+
         Customer customer = new Customer();
 
         customer.setFirstName(request.getFirstName());
@@ -28,6 +35,9 @@ public class CustomerService {
         customer.setPhone(request.getPhone());
 
         Customer savedCustomer = customerRepository.save(customer);
+
+        log.info("Customer created successfully with id: {}",
+                savedCustomer.getId());
 
         return new CustomerResponse(
                 savedCustomer.getId(),
@@ -39,6 +49,8 @@ public class CustomerService {
     }
 
     public List<CustomerResponse> getAllCustomers() {
+
+        log.info("Fetching all customers");
 
         return customerRepository.findAll()
                 .stream()
@@ -54,6 +66,8 @@ public class CustomerService {
 
     public CustomerResponse getCustomerById(Long id) {
 
+        log.info("Fetching customer with id: {}", id);
+
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() ->
                         new CustomerNotFoundException(
@@ -68,7 +82,10 @@ public class CustomerService {
         );
     }
 
-    public CustomerResponse updateCustomer(Long id, CustomerRequest request) {
+    public CustomerResponse updateCustomer(
+            Long id, CustomerRequest request) {
+
+        log.info("Updating customer with id: {}", id);
 
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() ->
@@ -82,6 +99,9 @@ public class CustomerService {
 
         Customer updatedCustomer = customerRepository.save(customer);
 
+        log.info("Customer updated successfully with id: {}",
+                updatedCustomer.getId());
+
         return new CustomerResponse(
                 updatedCustomer.getId(),
                 updatedCustomer.getFirstName(),
@@ -93,11 +113,15 @@ public class CustomerService {
 
     public void deleteCustomer(Long id) {
 
+        log.info("Deleting customer with id: {}", id);
+
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() ->
                         new CustomerNotFoundException(
                                 "Customer not found with id: " + id));
 
         customerRepository.delete(customer);
+
+        log.info("Customer deleted successfully with id: {}", id);
     }
 }
